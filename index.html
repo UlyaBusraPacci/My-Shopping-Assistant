@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"></script>
+
+    <title>My Assistant</title>
+</head>
+<body>
+    <h1>Ask a Question</h1>
+    <form onsubmit="event.preventDefault(); sendMessage();" id="frmAnswer">
+        <label for="question" style="font-size:20px">Your Question:</label>
+        <input type="text" id="question" name="question" required style="margin-top:100px">
+        <br>
+        <input type="submit" value="Ask">
+    </form>
+    <div id="questionContainer"></div>
+    <div id="answerContainer"></div>
+
+    <script>
+        const socket = io('http://localhost:4000'); // Python server'ınızın adresi ve portu
+
+        function sendMessage() {
+            question = document.getElementById('question').value;
+            socket.emit('question', { question });
+            console.log(question);
+        }
+
+    // data includes just answer of certain question 
+    // so thst i can not use "data.question"  
+        socket.on('answer', (data) => {
+        console.log('Received answer:', data);
+
+
+// tekli basıyor
+   // // Cevabı HTML içeriğine ekleme
+    const answerContainer = document.getElementById('answerContainer');
+    answerContainer.innerHTML = `<p>Assistant's Response: ${data.assistant_response}</p>`;
+
+    const questionContainer = document.getElementById('questionContainer');
+    questionContainer.innerHTML = `<p>Question: ${question}</p>`;
+
+            $('#answerContainer').html('');
+            for (var i = 0; i < data.length; i++) {
+                // Her kelimeyi ayır
+                var words = data.assistant_response.split(" ");
+console.log(words);
+                // Her kelimeyi kontrol et
+                for (var j = 0; j < words.length; j++) {
+                    // Eğer kelime "http" ile başlıyorsa
+                    if (words[j].startsWith("(http")) {
+                        // Kelimeyi <a> etiketi içine alıp bastır
+                        $('#answerContainer').append('<div class="answerContainer" style="float:left;width: 100%;"><h3>Question:</h3>' + question + '</div><div class="answerContainer" style="color:red;float:left;width:100%;"><h3>Assistant\'s Response:</h3><a href="' + words[j] + '">' + words[j] + '</a></div>');
+                    } else {
+                        // Değilse normal olarak bastır
+                        $('#answerContainer').append('<div class="answerContainer" style="float:left;width: 100%;"><h3>Question:</h3>' + question + '</div><div class="answerContainer" style="color:red;float:left;width:100%;"><h3>Assistant\'s Response:</h3>' + data.assistant_response + '</div>');
+                    }
+                     break;
+                }
+              
+             }
+        
+});
+        
+    </script>
+</body>
+</html>
+
+    
+</body>
+</html>
